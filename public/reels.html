@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ReelAI – Trending Reels Generator</title>
+<link href="https://fonts.googleapis.com/css2?family=Teko:wght@400;600;700&family=Rajdhani:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root{--bg:#080810;--surface:#0f0f1a;--card:#14141f;--border:#1e1e30;--accent:#ff2d55;--accent2:#ff9f0a;--accent3:#30d158;--blue:#0a84ff;--text:#f0f0f8;--muted:#5a5a7a;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;}
+header{padding:16px 32px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);}
+.logo{font-family:'Teko',sans-serif;font-size:2rem;font-weight:700;letter-spacing:2px;background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.platform-badges{display:flex;gap:8px;}
+.pbadge{padding:5px 14px;border-radius:20px;font-size:0.7rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;}
+.pbadge.ig{background:linear-gradient(135deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);color:#fff;}
+.pbadge.yt{background:#ff0000;color:#fff;}
+.app-body{display:grid;grid-template-columns:300px 1fr 320px;flex:1;overflow:hidden;height:calc(100vh - 65px);}
+.left-panel{background:var(--surface);border-right:1px solid var(--border);overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:14px;}
+.left-panel::-webkit-scrollbar{width:3px;}
+.left-panel::-webkit-scrollbar-thumb{background:var(--border);}
+.panel-title{font-family:'Teko',sans-serif;font-size:1rem;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:2px;}
+.input-group{display:flex;flex-direction:column;gap:6px;}
+.input-group label{font-size:0.7rem;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--muted);}
+select{background:var(--card);border:1px solid var(--border);color:var(--text);padding:10px 14px;border-radius:8px;font-family:'Inter',sans-serif;font-size:0.85rem;outline:none;width:100%;}
+.divider{height:1px;background:var(--border);}
+.topic-list{display:flex;flex-direction:column;gap:6px;}
+.topic-item{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px 14px;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:10px;}
+.topic-item:hover{border-color:var(--accent);}
+.topic-item.active{border-color:var(--accent);background:rgba(255,45,85,0.08);}
+.topic-num{font-family:'Teko',sans-serif;font-size:1.3rem;color:var(--muted);min-width:28px;line-height:1;}
+.topic-item.active .topic-num{color:var(--accent);}
+.topic-text{font-size:0.78rem;font-weight:500;line-height:1.3;flex:1;}
+.topic-cat{font-size:0.6rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:2px 7px;border-radius:10px;background:var(--border);color:var(--muted);white-space:nowrap;}
+.btn{padding:12px 20px;border:none;border-radius:8px;font-family:'Inter',sans-serif;font-weight:600;font-size:0.85rem;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:8px;width:100%;}
+.btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 4px 20px rgba(255,45,85,0.3);}
+.btn-primary:disabled{opacity:0.4;cursor:not-allowed;transform:none;box-shadow:none;}
+.btn-green{background:var(--accent3);color:#000;font-weight:700;}
+.btn-green:hover{transform:translateY(-1px);box-shadow:0 4px 20px rgba(48,209,88,0.3);}
+.btn-green:disabled{opacity:0.4;cursor:not-allowed;transform:none;}
+.progress-box{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px;display:none;}
+.progress-text{font-size:0.75rem;color:var(--muted);margin-bottom:8px;}
+.prog-bar{height:4px;background:var(--border);border-radius:2px;overflow:hidden;}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));width:0%;transition:width 0.5s ease;border-radius:2px;}
+.center-panel{display:flex;flex-direction:column;align-items:center;justify-content:center;background:#050508;overflow:hidden;gap:16px;padding:20px;}
+.canvas-wrap{position:relative;width:405px;height:720px;border-radius:24px;overflow:hidden;box-shadow:0 0 0 1px rgba(255,255,255,0.05),0 30px 80px rgba(0,0,0,0.8);}
+#reelCanvas{width:100%;height:100%;display:block;}
+.canvas-controls{display:flex;gap:10px;}
+.play-btn{width:44px;height:44px;border-radius:50%;border:2px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.08);color:#fff;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;}
+.play-btn:hover{background:rgba(255,255,255,0.15);}
+.slide-indicator{display:flex;gap:5px;align-items:center;}
+.slide-dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,0.2);transition:all 0.3s;cursor:pointer;}
+.slide-dot.active{background:var(--accent);width:20px;border-radius:3px;}
+.empty-canvas{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:var(--muted);font-size:0.85rem;background:var(--card);position:absolute;top:0;left:0;}
+.empty-icon{font-size:3rem;}
+.right-panel{background:var(--surface);border-left:1px solid var(--border);overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:14px;}
+.right-panel::-webkit-scrollbar{width:3px;}
+.right-panel::-webkit-scrollbar-thumb{background:var(--border);}
+.script-box{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px;font-size:0.78rem;line-height:1.7;color:var(--text);min-height:100px;white-space:pre-wrap;}
+.slides-preview{display:flex;flex-direction:column;gap:6px;}
+.slide-preview-item{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:8px 12px;cursor:pointer;transition:all 0.2s;display:flex;align-items:flex-start;gap:8px;}
+.slide-preview-item:hover,.slide-preview-item.active{border-color:var(--accent);}
+.slide-preview-num{font-family:'Teko',sans-serif;font-size:1.1rem;color:var(--accent);min-width:20px;}
+.slide-preview-text{font-size:0.73rem;line-height:1.4;color:var(--muted);}
+.caption-box{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px;font-size:0.76rem;line-height:1.8;color:var(--text);white-space:pre-wrap;}
+.copy-btn{background:var(--border);border:none;color:var(--text);padding:6px 14px;border-radius:6px;font-size:0.72rem;font-weight:600;cursor:pointer;transition:all 0.2s;}
+.copy-btn:hover{background:var(--accent);color:#fff;}
+.hashtag-wrap{display:flex;flex-wrap:wrap;gap:6px;}
+.hashtag{background:rgba(10,132,255,0.15);color:var(--blue);border:1px solid rgba(10,132,255,0.3);padding:4px 10px;border-radius:14px;font-size:0.7rem;font-weight:600;}
+.theme-row{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;}
+.theme-swatch{height:36px;border-radius:6px;cursor:pointer;border:2px solid transparent;transition:all 0.2s;position:relative;overflow:hidden;}
+.theme-swatch.active{border-color:#fff;transform:scale(1.05);}
+.theme-swatch span{position:absolute;bottom:2px;left:0;right:0;text-align:center;font-size:0.5rem;font-weight:700;color:rgba(255,255,255,0.8);text-transform:uppercase;letter-spacing:0.5px;}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">⚡ ReelAI</div>
+  <div class="platform-badges">
+    <span class="pbadge ig">📸 Instagram</span>
+    <span class="pbadge yt">▶ YouTube Shorts</span>
+  </div>
+</header>
+
+<div class="app-body">
+  <!-- LEFT -->
+  <div class="left-panel">
+    <div>
+      <div class="panel-title">🎨 Theme</div>
+      <div class="theme-row">
+        <div class="theme-swatch active" data-theme="fire" style="background:linear-gradient(135deg,#1a0005,#ff2d55)" onclick="selectTheme(this,'fire')"><span>Fire</span></div>
+        <div class="theme-swatch" data-theme="neon" style="background:linear-gradient(135deg,#000,#0a84ff)" onclick="selectTheme(this,'neon')"><span>Neon</span></div>
+        <div class="theme-swatch" data-theme="gold" style="background:linear-gradient(135deg,#0a0800,#ff9f0a)" onclick="selectTheme(this,'gold')"><span>Gold</span></div>
+        <div class="theme-swatch" data-theme="matrix" style="background:linear-gradient(135deg,#000,#30d158)" onclick="selectTheme(this,'matrix')"><span>Matrix</span></div>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <div class="input-group">
+      <label>📊 Niche</label>
+      <select id="niche">
+        <option value="general trending news India aur world se">🌍 General Trending</option>
+        <option value="technology aur AI news">💻 Tech & AI</option>
+        <option value="cricket aur sports">🏏 Sports/Cricket</option>
+        <option value="Bollywood aur entertainment">🎬 Bollywood</option>
+        <option value="business aur stock market">📈 Business/Finance</option>
+        <option value="politics aur government">🗳️ Politics</option>
+      </select>
+    </div>
+    <button class="btn btn-primary" id="fetchBtn" onclick="fetchTopics()">🔥 Fetch Top 10 Topics</button>
+    <div class="progress-box" id="progressBox">
+      <div class="progress-text" id="progressText">Loading...</div>
+      <div class="prog-bar"><div class="prog-fill" id="progFill"></div></div>
+    </div>
+    <div class="divider"></div>
+    <div>
+      <div class="panel-title">📋 Topics</div>
+      <div class="topic-list" id="topicList"><div style="color:var(--muted);font-size:0.78rem;padding:8px 0;">Pehle topics fetch karo ☝️</div></div>
+    </div>
+  </div>
+
+  <!-- CENTER -->
+  <div class="center-panel">
+    <div class="canvas-wrap">
+      <canvas id="reelCanvas" width="405" height="720"></canvas>
+      <div class="empty-canvas" id="emptyCanvas">
+        <span class="empty-icon">🎬</span>
+        <span>Reel preview yahan aayega</span>
+        <span style="font-size:0.72rem;">Topic select karo</span>
+      </div>
+    </div>
+    <div class="canvas-controls">
+      <button class="play-btn" onclick="prevSlide()">◀</button>
+      <div class="slide-indicator" id="slideIndicator"></div>
+      <button class="play-btn" onclick="nextSlide()">▶</button>
+      <button class="play-btn" id="playBtn" onclick="togglePlay()">▶️</button>
+      <button class="play-btn" onclick="downloadFrame()" title="Download">💾</button>
+    </div>
+  </div>
+
+  <!-- RIGHT -->
+  <div class="right-panel">
+    <div>
+      <div class="panel-title" style="margin-bottom:8px;">📝 Voiceover Script</div>
+      <div class="script-box" id="scriptBox" style="color:var(--muted);font-style:italic;">Topic select karo...</div>
+      <div style="display:flex;gap:6px;margin-top:8px;">
+        <button class="copy-btn" onclick="copyScript()">📋 Script</button>
+        <button class="copy-btn" onclick="copyCaption()">📋 Caption+Tags</button>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <div>
+      <div class="panel-title" style="margin-bottom:6px;">🎞️ Slides</div>
+      <div class="slides-preview" id="slidesPreview"><div style="color:var(--muted);font-size:0.76rem;">Generate hone ke baad dikhega...</div></div>
+    </div>
+    <div class="divider"></div>
+    <div>
+      <div class="panel-title" style="margin-bottom:6px;">✍️ Caption</div>
+      <div class="caption-box" id="captionBox" style="color:var(--muted);font-style:italic;">Yahan aayega...</div>
+    </div>
+    <div class="divider"></div>
+    <div>
+      <div class="panel-title" style="margin-bottom:6px;"># Hashtags</div>
+      <div class="hashtag-wrap" id="hashtagWrap"><span style="color:var(--muted);font-size:0.76rem;">Yahan aayenge...</span></div>
+    </div>
+    <div class="divider"></div>
+    <button class="btn btn-green" id="downloadBtn" onclick="downloadAllSlides()" disabled>💾 Download All (ZIP)</button>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px;font-size:0.7rem;color:var(--muted);line-height:1.8;">
+      <strong style="color:var(--text);">📱 Upload Guide:</strong><br>
+      • Slides download karo (9:16 ready)<br>
+      • Instagram → Reel → Select slides<br>
+      • YouTube → Upload → Shorts<br>
+      • Caption + Hashtags paste karo 🚀
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script>
+// ✅ Backend API — koi API key user ko dene ki zaroorat nahi
+const API_URL = '/api/chat';
+
+let topics=[], currentTopic=null, slides=[], currentSlide=0, playInterval=null, isPlaying=false, selectedTheme='fire';
+
+const THEMES = {
+  fire:{bg:['#0d0005','#1a000a','#250010'],accent:'#ff2d55',accent2:'#ff9f0a',text:'#ffffff',sub:'#ffb3c1'},
+  neon:{bg:['#000510','#000d1a','#001020'],accent:'#0a84ff',accent2:'#bf5af2',text:'#ffffff',sub:'#a0c8ff'},
+  gold:{bg:['#0a0800','#150f00','#1f1500'],accent:'#ff9f0a',accent2:'#ffd60a',text:'#ffffff',sub:'#ffe5a0'},
+  matrix:{bg:['#000800','#001000','#001800'],accent:'#30d158',accent2:'#34c759',text:'#ffffff',sub:'#a0ffb8'}
+};
+
+function selectTheme(el,t){document.querySelectorAll('.theme-swatch').forEach(s=>s.classList.remove('active'));el.classList.add('active');selectedTheme=t;if(slides.length>0)renderSlide(currentSlide);}
+
+function setProgress(pct,text){document.getElementById('progFill').style.width=pct+'%';document.getElementById('progressText').textContent=text;document.getElementById('progressBox').style.display='block';}
+function hideProgress(){document.getElementById('progressBox').style.display='none';}
+
+async function callAI(messages,max_tokens=1000,system=null){
+  const body={messages,max_tokens};
+  if(system)body.system=system;
+  const res=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  const data=await res.json();
+  if(data.error)throw new Error(data.error);
+  return data.content[0].text;
+}
+
+async function fetchTopics(){
+  const niche=document.getElementById('niche').value;
+  const btn=document.getElementById('fetchBtn');
+  btn.disabled=true;btn.textContent='⏳ Fetching...';
+  setProgress(10,'AI se topics la raha hoon...');
+  try{
+    const raw=await callAI([{role:'user',content:`List exactly 10 trending topics about: ${niche}. Today: ${new Date().toDateString()}. JSON only:\n{"topics":[{"rank":1,"title":"Topic","category":"Tech","emoji":"💻"}]}`}],800);
+    topics=JSON.parse(raw.replace(/```json|```/g,'').trim()).topics;
+    setProgress(100,`✅ ${topics.length} topics!`);
+    setTimeout(hideProgress,800);
+    renderTopicList();
+  }catch(e){hideProgress();alert('Error: '+e.message);}
+  btn.disabled=false;btn.textContent='🔥 Fetch Top 10 Topics';
+}
+
+function renderTopicList(){
+  document.getElementById('topicList').innerHTML=topics.map(t=>`
+    <div class="topic-item" onclick="selectTopic(${t.rank})" id="ti-${t.rank}">
+      <div class="topic-num">${String(t.rank).padStart(2,'0')}</div>
+      <div class="topic-text">${t.emoji||'🔥'} ${t.title}</div>
+      <span class="topic-cat">${t.category}</span>
+    </div>`).join('');
+}
+
+async function selectTopic(rank){
+  currentTopic=topics.find(t=>t.rank===rank);
+  document.querySelectorAll('.topic-item').forEach(el=>el.classList.remove('active'));
+  document.getElementById('ti-'+rank).classList.add('active');
+  document.getElementById('emptyCanvas').style.display='none';
+  setProgress(15,'Reel content generate kar raha hoon...');
+  try{
+    const raw=await callAI([{role:'user',content:`Create viral Hinglish Instagram Reel for: "${currentTopic.title}". JSON only:
+{"slides":[{"text":"HOOK\\n(sub)","type":"hook"},{"text":"SLIDE\\n(detail)","type":"info"},{"text":"SLIDE\\n(detail)","type":"info"},{"text":"FACT\\n(stat)","type":"fact"},{"text":"CTA\\n(follow)","type":"cta"}],"script":"30-45 sec Hinglish voiceover script","caption":"Engaging Hinglish caption with emojis","hashtags":["#trending","#viral","#news","#india","#shorts","#reels","#trending2025","#breakingnews","#todaysnews","#hindinews"]}`}],1500);
+    setProgress(80,'Canvas render...');
+    const content=JSON.parse(raw.replace(/```json|```/g,'').trim());
+    slides=content.slides; currentSlide=0;
+    const s=document.getElementById('scriptBox');
+    s.textContent=content.script;s.style.color='';s.style.fontStyle='';
+    document.getElementById('captionBox').textContent=content.caption;
+    document.getElementById('captionBox').style.color='';document.getElementById('captionBox').style.fontStyle='';
+    document.getElementById('hashtagWrap').innerHTML=content.hashtags.map(h=>`<span class="hashtag">${h}</span>`).join('');
+    renderSlidesPreview();renderSlide(0);updateSlideIndicator();
+    document.getElementById('downloadBtn').disabled=false;
+    setProgress(100,'✅ Reel ready!');setTimeout(hideProgress,1000);
+  }catch(e){hideProgress();alert('Error: '+e.message);}
+}
+
+function renderSlide(idx){
+  const canvas=document.getElementById('reelCanvas');
+  const ctx=canvas.getContext('2d');
+  const W=canvas.width,H=canvas.height;
+  const theme=THEMES[selectedTheme];
+  const slide=slides[idx];
+  if(!slide)return;
+  ctx.clearRect(0,0,W,H);
+  const bgGrad=ctx.createLinearGradient(0,0,W,H);
+  theme.bg.forEach((c,i)=>bgGrad.addColorStop(i/(theme.bg.length-1),c));
+  ctx.fillStyle=bgGrad;ctx.fillRect(0,0,W,H);
+  // Grid
+  ctx.strokeStyle='rgba(255,255,255,0.03)';ctx.lineWidth=1;
+  for(let x=0;x<W;x+=40){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
+  for(let y=0;y<H;y+=40){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+  // Glow
+  const g1=ctx.createRadialGradient(W*0.8,H*0.2,0,W*0.8,H*0.2,200);
+  g1.addColorStop(0,theme.accent+'40');g1.addColorStop(1,'transparent');
+  ctx.fillStyle=g1;ctx.fillRect(0,0,W,H);
+  // Top bar
+  const barG=ctx.createLinearGradient(0,0,W,0);
+  barG.addColorStop(0,theme.accent);barG.addColorStop(1,theme.accent2);
+  ctx.fillStyle=barG;ctx.fillRect(0,0,W,5);
+  // Brand
+  ctx.font='bold 13px Inter,sans-serif';ctx.fillStyle='rgba(255,255,255,0.3)';ctx.fillText('TRENDPULSE',24,36);
+  ctx.textAlign='right';ctx.font='bold 12px Inter,sans-serif';ctx.fillStyle='rgba(255,255,255,0.3)';
+  ctx.fillText(`${idx+1}/${slides.length}`,W-24,36);ctx.textAlign='left';
+  // Tag
+  if(currentTopic){
+    const tag=`${currentTopic.emoji||'🔥'} ${currentTopic.category.toUpperCase()}`;
+    ctx.font='bold 11px Inter,sans-serif';
+    const tw=ctx.measureText(tag).width+20;
+    ctx.fillStyle=theme.accent+'cc';
+    roundRect(ctx,24,52,tw,24,4);ctx.fillStyle='#fff';ctx.fillText(tag,34,68);
+  }
+  // Main text
+  const lines=slide.text.split('\n');
+  const mainText=lines[0]||'';const subText=lines[1]||'';
+  let fontSize=64;
+  ctx.font=`900 ${fontSize}px Teko,sans-serif`;
+  while(ctx.measureText(mainText).width>W-60&&fontSize>28){fontSize-=2;ctx.font=`900 ${fontSize}px Teko,sans-serif`;}
+  const tGrad=ctx.createLinearGradient(0,H*0.35,W,H*0.55);
+  tGrad.addColorStop(0,'#ffffff');tGrad.addColorStop(1,theme.accent);
+  const words=mainText.split(' ');let line='';const tLines=[];const maxW=W-60;
+  for(const w of words){const t=line+w+' ';if(ctx.measureText(t).width>maxW&&line!==''){tLines.push(line.trim());line=w+' ';}else{line=t;}}
+  tLines.push(line.trim());
+  const lineH=fontSize*1.1;const totalH=tLines.length*lineH;let startY=H*0.42-totalH/2;
+  tLines.forEach((tl,i)=>{ctx.fillStyle=tGrad;ctx.font=`900 ${fontSize}px Teko,sans-serif`;ctx.fillText(tl,30,startY+i*lineH);});
+  if(subText){
+    const subY=startY+totalH+20;const subSz=Math.min(22,fontSize*0.45);
+    ctx.font=`500 ${subSz}px Rajdhani,sans-serif`;ctx.fillStyle=theme.sub||'rgba(255,255,255,0.7)';
+    const sw=subText.split(' ');let sl='';const sLines=[];
+    for(const w of sw){const t=sl+w+' ';if(ctx.measureText(t).width>maxW&&sl!==''){sLines.push(sl.trim());sl=w+' ';}else{sl=t;}}
+    sLines.push(sl.trim());sLines.slice(0,3).forEach((l,i)=>ctx.fillText(l,30,subY+i*30));
+  }
+  // Bottom
+  const bG=ctx.createLinearGradient(0,0,W,0);bG.addColorStop(0,'transparent');bG.addColorStop(0.5,theme.accent);bG.addColorStop(1,'transparent');
+  ctx.fillStyle=bG;ctx.fillRect(0,H-80,W,1);
+  if(slide.type==='cta'){ctx.font='bold 16px Rajdhani,sans-serif';ctx.fillStyle=theme.accent;ctx.textAlign='center';ctx.fillText('👇 FOLLOW FOR DAILY UPDATES 👇',W/2,H-50);}
+  else{ctx.font='500 13px Rajdhani,sans-serif';ctx.fillStyle='rgba(255,255,255,0.25)';ctx.textAlign='center';ctx.fillText('swipe for more ›',W/2,H-50);}
+  ctx.textAlign='left';
+  ctx.fillStyle=barG;ctx.fillRect(0,H-5,W,5);
+  document.querySelectorAll('.slide-preview-item').forEach((el,i)=>el.classList.toggle('active',i===idx));
+}
+
+function roundRect(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.arcTo(x+w,y,x+w,y+r,r);ctx.lineTo(x+w,y+h-r);ctx.arcTo(x+w,y+h,x+w-r,y+h,r);ctx.lineTo(x+r,y+h);ctx.arcTo(x,y+h,x,y+h-r,r);ctx.lineTo(x,y+r);ctx.arcTo(x,y,x+r,y,r);ctx.closePath();ctx.fill();}
+
+function renderSlidesPreview(){
+  document.getElementById('slidesPreview').innerHTML=slides.map((s,i)=>`
+    <div class="slide-preview-item ${i===0?'active':''}" onclick="goToSlide(${i})">
+      <div class="slide-preview-num">${i+1}</div>
+      <div class="slide-preview-text">${s.text.replace('\n',' · ').substring(0,55)}...</div>
+    </div>`).join('');
+}
+
+function updateSlideIndicator(){
+  document.getElementById('slideIndicator').innerHTML=slides.map((_,i)=>`<div class="slide-dot ${i===currentSlide?'active':''}" onclick="goToSlide(${i})"></div>`).join('');
+}
+function goToSlide(idx){currentSlide=idx;renderSlide(idx);updateSlideIndicator();}
+function prevSlide(){if(!slides.length)return;currentSlide=(currentSlide-1+slides.length)%slides.length;renderSlide(currentSlide);updateSlideIndicator();}
+function nextSlide(){if(!slides.length)return;currentSlide=(currentSlide+1)%slides.length;renderSlide(currentSlide);updateSlideIndicator();}
+function togglePlay(){const btn=document.getElementById('playBtn');if(isPlaying){clearInterval(playInterval);isPlaying=false;btn.textContent='▶️';}else{isPlaying=true;btn.textContent='⏸️';playInterval=setInterval(nextSlide,2000);}}
+function copyScript(){navigator.clipboard.writeText(document.getElementById('scriptBox').textContent);alert('✅ Script copied!');}
+function copyCaption(){const c=document.getElementById('captionBox').textContent;const h=Array.from(document.querySelectorAll('.hashtag')).map(t=>t.textContent).join(' ');navigator.clipboard.writeText(c+'\n\n'+h);alert('✅ Caption + Hashtags copied!');}
+function downloadFrame(){const a=document.createElement('a');a.download=`reel_slide_${currentSlide+1}.png`;a.href=document.getElementById('reelCanvas').toDataURL('image/png');a.click();}
+
+async function downloadAllSlides(){
+  if(!slides.length)return;
+  const zip=new JSZip();const folder=zip.folder('reel_slides');
+  const canvas=document.getElementById('reelCanvas');
+  for(let i=0;i<slides.length;i++){renderSlide(i);await new Promise(r=>setTimeout(r,100));folder.file(`slide_${i+1}.png`,canvas.toDataURL('image/png').split(',')[1],{base64:true});}
+  const script=document.getElementById('scriptBox').textContent;
+  const caption=document.getElementById('captionBox').textContent;
+  const hashtags=Array.from(document.querySelectorAll('.hashtag')).map(h=>h.textContent).join(' ');
+  folder.file('script_and_caption.txt',`SCRIPT:\n${script}\n\nCAPTION:\n${caption}\n\nHASHTAGS:\n${hashtags}`);
+  const blob=await zip.generateAsync({type:'blob'});
+  const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=`reel_${currentTopic?.title?.replace(/\s+/g,'_').substring(0,30)||'slides'}.zip`;a.click();URL.revokeObjectURL(url);
+  renderSlide(currentSlide);
+}
+</script>
+</body>
+</html>

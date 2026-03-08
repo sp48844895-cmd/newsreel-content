@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TrendPulse – AI Trending News Summaries</title>
+  <meta name="description" content="Top 10 trending topics today with AI-powered summaries. Stay updated instantly."/>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg: #f5f2eb; --ink: #1a1208; --paper: #faf8f3;
+      --accent: #e8430a; --accent2: #f5a623; --muted: #8a7f6e;
+      --border: #ddd8cc; --card: #ffffff;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Manrope',sans-serif; background:var(--bg); color:var(--ink); min-height:100vh; }
+
+    .top-ad { background:var(--ink); color:var(--bg); display:flex; align-items:center; justify-content:center; min-height:64px; font-size:0.7rem; letter-spacing:2px; text-transform:uppercase; border-bottom:3px solid var(--accent); }
+
+    header { background:var(--paper); border-bottom:3px solid var(--ink); padding:20px 40px; }
+    .header-inner { max-width:1200px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; }
+    .logo { font-family:'Bebas Neue',sans-serif; font-size:3rem; letter-spacing:2px; color:var(--ink); line-height:1; }
+    .logo span { color:var(--accent); }
+    .date-line { font-size:0.75rem; color:var(--muted); text-transform:uppercase; letter-spacing:1.5px; }
+    .tagline { font-size:0.85rem; font-weight:600; color:var(--ink); margin-top:2px; }
+
+    .nav-strip { background:var(--ink); padding:10px 40px; display:flex; align-items:center; gap:24px; overflow-x:auto; }
+    .nav-strip a { color:rgba(245,242,235,0.6); text-decoration:none; font-size:0.75rem; font-weight:600; text-transform:uppercase; letter-spacing:1.5px; white-space:nowrap; transition:color 0.2s; }
+    .nav-strip a:hover, .nav-strip a.active { color:var(--accent2); }
+
+    .page-wrap { max-width:1200px; margin:0 auto; padding:32px 24px; display:grid; grid-template-columns:1fr 300px; gap:32px; }
+
+    .stats-bar { display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--border); border:1px solid var(--border); border-radius:6px; overflow:hidden; margin-bottom:24px; }
+    .stat-item { background:var(--card); padding:14px; text-align:center; }
+    .stat-num { font-family:'Bebas Neue',sans-serif; font-size:1.8rem; color:var(--accent); line-height:1; }
+    .stat-label { font-size:0.65rem; text-transform:uppercase; letter-spacing:1px; color:var(--muted); margin-top:2px; }
+
+    .hero-bar { display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; flex-wrap:wrap; gap:12px; }
+    .section-title { font-family:'Bebas Neue',sans-serif; font-size:2rem; letter-spacing:2px; display:flex; align-items:center; gap:10px; }
+    .live-dot { width:10px; height:10px; background:var(--accent); border-radius:50%; animation:pulse 1.5s infinite; display:inline-block; }
+
+    .refresh-btn { background:var(--accent); color:#fff; border:none; padding:10px 20px; border-radius:4px; font-family:'Manrope',sans-serif; font-weight:700; font-size:0.8rem; letter-spacing:1px; text-transform:uppercase; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; gap:8px; }
+    .refresh-btn:hover { background:#c73508; transform:translateY(-1px); }
+    .refresh-btn:disabled { background:var(--muted); cursor:not-allowed; transform:none; }
+
+    .progress-wrap { margin-bottom:20px; display:none; }
+    .progress-label { font-size:0.75rem; font-weight:600; text-transform:uppercase; letter-spacing:1px; color:var(--muted); margin-bottom:6px; }
+    .progress-bar { height:3px; background:var(--border); border-radius:2px; overflow:hidden; }
+    .progress-fill { height:100%; background:linear-gradient(90deg,var(--accent),var(--accent2)); width:0%; transition:width 0.4s ease; }
+
+    .topics-grid { display:flex; flex-direction:column; gap:0; }
+    .topic-card { background:var(--card); border:1px solid var(--border); border-top:none; padding:20px 24px; display:grid; grid-template-columns:48px 1fr; gap:16px; align-items:start; transition:background 0.2s; animation:slideIn 0.4s ease both; }
+    .topic-card:first-child { border-top:1px solid var(--border); border-radius:6px 6px 0 0; }
+    .topic-card:last-child { border-radius:0 0 6px 6px; }
+    .topic-card:hover { background:#fffdf8; }
+    .ad-card { background:#f9f6f0; border:1px solid var(--border); border-top:none; padding:16px 24px; display:flex; align-items:center; justify-content:center; min-height:90px; font-size:0.7rem; color:var(--muted); text-transform:uppercase; letter-spacing:1px; }
+    .rank-num { font-family:'Bebas Neue',sans-serif; font-size:2.2rem; color:var(--border); line-height:1; text-align:center; padding-top:2px; transition:color 0.3s; }
+    .topic-card:hover .rank-num { color:var(--accent); }
+    .topic-header { display:flex; align-items:flex-start; justify-content:space-between; gap:8px; margin-bottom:8px; }
+    .topic-title { font-weight:700; font-size:1rem; line-height:1.3; color:var(--ink); }
+    .topic-tag { background:var(--ink); color:var(--bg); font-size:0.6rem; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; padding:3px 8px; border-radius:2px; white-space:nowrap; flex-shrink:0; }
+    .topic-summary { font-size:0.85rem; line-height:1.65; color:#444; }
+    .topic-meta { margin-top:10px; display:flex; align-items:center; gap:12px; font-size:0.72rem; color:var(--muted); }
+
+    .skeleton { background:linear-gradient(90deg,#eee 25%,#f5f5f5 50%,#eee 75%); background-size:200% 100%; animation:shimmer 1.5s infinite; border-radius:4px; height:14px; margin-bottom:6px; }
+    .skeleton.title { width:70%; height:18px; }
+    .skeleton.short { width:40%; }
+
+    .sidebar {}
+    .sidebar-section { background:var(--card); border:1px solid var(--border); border-radius:6px; margin-bottom:24px; overflow:hidden; }
+    .sidebar-head { background:var(--ink); color:var(--bg); padding:10px 16px; font-family:'Bebas Neue',sans-serif; font-size:1rem; letter-spacing:2px; }
+    .sidebar-body { padding:16px; }
+    .sidebar-ad-box { min-height:250px; display:flex; align-items:center; justify-content:center; background:#f9f6f0; font-size:0.7rem; color:var(--muted); text-transform:uppercase; letter-spacing:1px; border-top:1px solid var(--border); }
+
+    .quick-link { display:flex; align-items:center; gap:8px; padding:8px 0; border-bottom:1px solid var(--border); font-size:0.82rem; font-weight:500; color:var(--ink); text-decoration:none; cursor:pointer; transition:color 0.2s; }
+    .quick-link:last-child { border-bottom:none; }
+    .quick-link:hover { color:var(--accent); }
+    .quick-link .ql-num { font-family:'Bebas Neue'; font-size:1.1rem; color:var(--muted); min-width:20px; }
+
+    footer { background:var(--ink); color:var(--bg); text-align:center; padding:20px; font-size:0.75rem; opacity:0.8; }
+
+    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.8)} }
+    @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+    @keyframes slideIn { from{opacity:0;transform:translateX(-10px)} to{opacity:1;transform:translateX(0)} }
+    @media(max-width:768px){ .page-wrap{grid-template-columns:1fr} .sidebar{display:none} header{padding:16px 20px} .logo{font-size:2.2rem} }
+  </style>
+</head>
+<body>
+
+<div class="top-ad">
+  <!-- ✅ ADSENSE: ca-pub-XXXXXXXX -->
+  Advertisement · 728×90
+</div>
+
+<header>
+  <div class="header-inner">
+    <div class="logo">Trend<span>Pulse</span></div>
+    <div>
+      <div class="date-line" id="dateDisplay"></div>
+      <div class="tagline">🔥 Top 10 Trending · AI Summarized</div>
+    </div>
+  </div>
+</header>
+
+<div class="nav-strip">
+  <a href="#" class="active">All Trends</a>
+  <a href="#">Technology</a><a href="#">Politics</a><a href="#">Sports</a>
+  <a href="#">Entertainment</a><a href="#">Business</a><a href="#">World</a>
+</div>
+
+<div class="page-wrap">
+  <main>
+    <div class="stats-bar">
+      <div class="stat-item"><div class="stat-num">10</div><div class="stat-label">Topics Today</div></div>
+      <div class="stat-item"><div class="stat-num" id="statUpdated">--</div><div class="stat-label">Last Updated</div></div>
+      <div class="stat-item"><div class="stat-num">AI</div><div class="stat-label">Powered</div></div>
+    </div>
+
+    <div class="progress-wrap" id="progressWrap">
+      <div class="progress-label" id="progressLabel">Loading...</div>
+      <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    </div>
+
+    <div class="hero-bar">
+      <div class="section-title"><span class="live-dot"></span> TODAY'S TOP 10</div>
+      <button class="refresh-btn" id="refreshBtn" onclick="loadTrends()">⟳ Refresh Trends</button>
+    </div>
+
+    <div class="topics-grid" id="topicsGrid">
+      <div class="topic-card"><div class="rank-num">—</div><div><div class="skeleton title"></div><div class="skeleton"></div><div class="skeleton short"></div></div></div>
+    </div>
+  </main>
+
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-head">SPONSORED</div>
+      <div class="sidebar-ad-box">300×250 · AdSense Ad</div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-head">QUICK LINKS</div>
+      <div class="sidebar-body" id="quickLinks"><div style="color:var(--muted);font-size:0.8rem;">Trends load hone ke baad...</div></div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-head">SPONSORED</div>
+      <div class="sidebar-ad-box" style="min-height:200px;">300×200 · AdSense Ad</div>
+    </div>
+  </aside>
+</div>
+
+<footer>TrendPulse © 2025 · Powered by Claude AI · Auto-generated content</footer>
+
+<script>
+  // ✅ Ye /api/chat pe call karta hai — API key safe hai server pe
+  const API_URL = '/api/chat';
+
+  document.getElementById('dateDisplay').textContent = new Date().toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+
+  function updateTime() {
+    const n = new Date();
+    document.getElementById('statUpdated').textContent = `${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}`;
+  }
+  updateTime();
+
+  function setProgress(pct, label) {
+    document.getElementById('progressFill').style.width = pct+'%';
+    document.getElementById('progressLabel').textContent = label;
+    document.getElementById('progressWrap').style.display = 'block';
+  }
+  function hideProgress() { document.getElementById('progressWrap').style.display='none'; }
+
+  async function callAI(messages, max_tokens=1000, system=null) {
+    const body = { messages, max_tokens };
+    if (system) body.system = system;
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    return data.content[0].text;
+  }
+
+  function showSkeletons() {
+    const grid = document.getElementById('topicsGrid');
+    grid.innerHTML = Array.from({length:10},(_,i)=>`
+      <div class="topic-card" style="animation-delay:${i*0.05}s">
+        <div class="rank-num">${String(i+1).padStart(2,'0')}</div>
+        <div><div class="skeleton title"></div><div class="skeleton"></div><div class="skeleton short"></div></div>
+      </div>`).join('');
+  }
+
+  async function loadTrends() {
+    const btn = document.getElementById('refreshBtn');
+    btn.disabled = true; btn.textContent = '⟳ Loading...';
+    setProgress(10, 'Step 1/3: Trending topics fetch kar raha hoon...');
+    showSkeletons();
+
+    try {
+      const topicsRaw = await callAI([{role:'user',content:`Today: ${new Date().toDateString()}. List exactly 10 real trending topics globally + India. JSON only:
+{"topics":[{"rank":1,"title":"Topic","category":"Tech"},...]}`}], 800);
+      const { topics } = JSON.parse(topicsRaw.replace(/```json|```/g,'').trim());
+
+      setProgress(40, 'Step 2/3: AI summaries generate kar raha hoon...');
+      const topicsList = topics.map(t=>`${t.rank}. ${t.title}`).join('\n');
+
+      const summaryRaw = await callAI([{role:'user',content:`Write 2-3 sentence summary for each. JSON only:
+{"summaries":[{"rank":1,"summary":"..."},...]}
+
+Topics:\n${topicsList}`}], 2000);
+      const { summaries } = JSON.parse(summaryRaw.replace(/```json|```/g,'').trim());
+
+      setProgress(85, 'Step 3/3: Cards render kar raha hoon...');
+      const merged = topics.map(t=>({...t, summary: summaries.find(s=>s.rank===t.rank)?.summary||''}));
+      renderCards(merged);
+      renderQuickLinks(merged);
+      updateTime();
+      setProgress(100,'✅ Done!');
+      setTimeout(hideProgress, 1200);
+
+    } catch(err) {
+      hideProgress();
+      document.getElementById('topicsGrid').innerHTML = `
+        <div class="topic-card"><div class="rank-num">!</div>
+        <div><div class="topic-title" style="color:red">Error: ${err.message}</div>
+        <div class="topic-summary">Dobara try karo.</div></div></div>`;
+    }
+    btn.disabled=false; btn.textContent='⟳ Refresh Trends';
+  }
+
+  function renderCards(topics) {
+    const grid = document.getElementById('topicsGrid');
+    grid.innerHTML = '';
+    topics.forEach((t,i)=>{
+      if(i===3||i===7) grid.innerHTML += `<div class="ad-card">📢 In-feed Ad · AdSense yahan</div>`;
+      grid.innerHTML += `
+        <div class="topic-card" style="animation-delay:${i*0.06}s">
+          <div class="rank-num">${String(t.rank).padStart(2,'0')}</div>
+          <div>
+            <div class="topic-header">
+              <div class="topic-title">${t.title}</div>
+              <span class="topic-tag">${t.category}</span>
+            </div>
+            <div class="topic-summary">${t.summary}</div>
+            <div class="topic-meta"><span>🕐 ${Math.floor(Math.random()*45)+5}m ago</span><span>👁 ${(Math.random()*9+1).toFixed(1)}K</span><span>🤖 AI</span></div>
+          </div>
+        </div>`;
+    });
+  }
+
+  function renderQuickLinks(topics) {
+    document.getElementById('quickLinks').innerHTML = topics.slice(0,7).map(t=>`
+      <div class="quick-link"><span class="ql-num">${String(t.rank).padStart(2,'0')}</span><span>${t.title}</span></div>`).join('');
+  }
+
+  // Auto load on open
+  window.addEventListener('load', loadTrends);
+</script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+{
+  "name": "trendpulse-ai",
+  "version": "1.0.0",
+  "description": "TrendPulse + ReelAI — Trending news & reel generator",
+  "type": "module",
+  "scripts": {
+    "dev": "vercel dev"
+  }
+}
